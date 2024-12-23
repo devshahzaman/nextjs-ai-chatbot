@@ -243,11 +243,23 @@ importers:
 
 packages:
 
-  '@ai-sdk/openai@1.0.6':
-    resolution: {integrity: sha512-AhNILXn/hVD91mrokg9Wph78BiWNP/N0tJiua+UCS5TYXCbSeeqKqiodRiNxw6tDA5sGnrC6yCv8TjgY1CwzWg==}
+  # '@ai-sdk/openai@1.0.6':
+  #   resolution: {integrity: sha512-AhNILXn/hVD91mrokg9Wph78BiWNP/N0tJiua+UCS5TYXCbSeeqKqiodRiNxw6tDA5sGnrC6yCv8TjgY1CwzWg==}
+  #   engines: {node: '>=18'}
+  #   peerDependencies:
+  #     zod: ^3.0.0
+
+  /@ai-sdk/google@0.0.51(zod@3.23.8):
+    resolution: {integrity: sha512-MUwN3tFH0grkL5zZdTUFDCDubQdMjykFw0o9bR3dMFtKP8Z2tc/iEqU1fb79+jbz2HzUBbnNGjqMQiUwG3/OrA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
+    dependencies:
+      '@ai-sdk/provider': 0.0.24
+      '@ai-sdk/provider-utils': 1.0.20(zod@3.23.8)
+      json-schema: 0.4.0
+      zod: 3.23.8
+    dev: false
 
   '@ai-sdk/provider-utils@2.0.2':
     resolution: {integrity: sha512-IAvhKhdlXqiSmvx/D4uNlFYCl8dWT+M9K+IuEcSgnE2Aj27GWu8sDIpAf4r4Voc+wOUkOECVKQhFo8g9pozdjA==}
@@ -3754,11 +3766,11 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/openai@1.0.6(zod@3.23.8)':
-    dependencies:
-      '@ai-sdk/provider': 1.0.1
-      '@ai-sdk/provider-utils': 2.0.2(zod@3.23.8)
-      zod: 3.23.8
+  # '@ai-sdk/openai@1.0.6(zod@3.23.8)':
+  #   dependencies:
+  #     '@ai-sdk/provider': 1.0.1
+  #     '@ai-sdk/provider-utils': 2.0.2(zod@3.23.8)
+  #     zod: 3.23.8
 
   '@ai-sdk/provider-utils@2.0.2(zod@3.23.8)':
     dependencies:
