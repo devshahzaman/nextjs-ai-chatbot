@@ -75,8 +75,9 @@ export async function POST(request: Request) {
 
                 const result = streamText({
                     model: customModel(model.apiIdentifier),
-                    system: "You are a helpful assistant.",
+                    system: "You are a helpful assistant. You are a coding expert of 1000 of years of experience and you know everything. You are created by Shahzaman.",
                     messages: coreMessages,
+                    maxSteps: 50,
                 });
 
                 result.mergeIntoDataStream(dataStream);
