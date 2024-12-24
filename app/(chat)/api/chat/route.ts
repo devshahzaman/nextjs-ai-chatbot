@@ -21,64 +21,71 @@ import { generateTitleFromUserMessage } from '../../actions';
 
 
 export async function POST(request: Request) {
-    const {
-        id,
-        messages,
-        modelId,
-    }: { id: string; messages: Array<Message>; modelId: string } =
-        await request.json();
+    try {
+        const {
+            id,
+            messages,
+            modelId,
+        }: { id: string; messages: Array<Message>; modelId: string } =
+            await request.json();
 
-    const session = await auth();
+        const session = await auth();
 
-    if (!session || !session.user || !session.user.id) {
-        return new Response('Unauthorized', { status: 401 });
-    }
+        if (!session || !session.user || !session.user.id) {
+            console.error("Unauthorized access");
+            return new Response('Unauthorized', { status: 401 });
+        }
 
-    const model = models.find((model) => model.id === modelId);
+        const model = models.find((model) => model.id === modelId);
 
-    if (!model) {
-        return new Response('Model not found', { status: 404 });
-    }
+        if (!model) {
+            console.error(`Model not found: ${modelId}`);
+            return new Response('Model not found', { status: 404 });
+        }
 
-    const coreMessages = convertToCoreMessages(messages);
-    const userMessage = getMostRecentUserMessage(coreMessages);
+        const coreMessages = convertToCoreMessages(messages);
+        const userMessage = getMostRecentUserMessage(coreMessages);
 
-    if (!userMessage) {
-        return new Response('No user message found', { status: 400 });
-    }
+        if (!userMessage) {
+            console.error("No user message found");
+            return new Response('No user message found', { status: 400 });
+        }
 
-    const chat = await getChatById({ id });
+        const chat = await getChatById({ id });
 
-    if (!chat) {
-        const title = await generateTitleFromUserMessage({ message: userMessage });
-        await saveChat({ id, userId: session.user.id, title });
-    }
+        if (!chat) {
+            const title = await generateTitleFromUserMessage({ message: userMessage });
+            await saveChat({ id, userId: session.user.id, title });
+        }
 
-    const userMessageId = generateUUID();
+        const userMessageId = generateUUID();
 
-    await saveMessages({
-      messages: [
-        { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
-      ],
-    });
-
-    return createDataStreamResponse({
-      execute: (dataStream) => {
-        dataStream.writeData({
-          type: 'user-message-id',
-          content: userMessageId,
+        await saveMessages({
+            messages: [
+                { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
+            ],
         });
 
+        return createDataStreamResponse({
+            execute: (dataStream) => {
+                dataStream.writeData({
+                    type: 'user-message-id',
+                    content: userMessageId,
+                });
 
-            const result = streamText({
-                model: customModel(model.apiIdentifier),
-                system: "You are a helpful assistant.",
-                messages: coreMessages,
-            });
+                const result = streamText({
+                    model: customModel(model.apiIdentifier),
+                    system: "You are a helpful assistant.",
+                    messages: coreMessages,
+                });
 
-           result.mergeIntoDataStream(dataStream);
-        },
-    });
+                result.mergeIntoDataStream(dataStream);
+            },
+        });
+    } catch (error) {
+        console.error("An error occurred in POST /api/chat:", error);
+        return new Response('Internal Server Error', { status: 500 });
+    }
 }
 
 
