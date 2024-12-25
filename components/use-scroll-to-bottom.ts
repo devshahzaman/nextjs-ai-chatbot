@@ -12,28 +12,38 @@ export function useScrollToBottom<T extends HTMLElement>(): [
     const end = endRef.current;
 
     if (container && end) {
-      const observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-          if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-            // Check if new content is added before scrolling
-            if (
-              container.scrollHeight >
-              container.scrollTop + container.clientHeight
-            ) {
-              end.scrollIntoView({ behavior: "smooth", block: "end" });
-            }
-          }
+      const observer = new MutationObserver(() => {
+        // Check if new content is added before scrolling
+        if (
+          container.scrollHeight >
+          container.scrollTop + container.clientHeight
+        ) {
+          end.scrollIntoView({ behavior: "smooth", block: "end" });
         }
       });
 
       observer.observe(container, {
         childList: true,
-        subtree: false, // Important: Only observe direct child changes
+        subtree: true,
       });
 
       return () => observer.disconnect();
     }
   }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const end = endRef.current;
+    if (container && end) {
+      // Check if new content is added before scrolling
+      if (
+        container.scrollHeight >
+        container.scrollTop + container.clientHeight
+      ) {
+        end.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
+    }
+  }, [containerRef, endRef]);
 
   return [containerRef, endRef];
 }
