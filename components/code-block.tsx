@@ -1,8 +1,5 @@
 'use client';
-
-import { useState, useEffect } from 'react';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-okaidia.css'; // Example: okaidia theme
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface CodeBlockProps {
@@ -19,55 +16,45 @@ export function CodeBlock({
   children,
   ...props
 }: CodeBlockProps) {
-  const [copied, setCopied] = useState(false);
+  const [output, setOutput] = useState<string | null>(null);
+  const [tab, setTab] = useState<'code' | 'run'>('code');
   const match = /language-(\w+)/.exec(className || '');
-  const language = match ? match[1] : 'text';
   const codeContent = String(children).replace(/\n$/, '');
-
-  // Highlight code on mount
-  useEffect(() => {
-    if (!inline) Prism.highlightAll();
-  }, [inline, codeContent]);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(codeContent);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
-    } catch (error) {
-      console.error('Failed to copy:', error);
-    }
-  };
 
   if (!inline) {
     return (
-      <div className="not-prose relative bg-zinc-900 text-zinc-50 border border-zinc-700 rounded-lg shadow-lg">
-        <div className="flex justify-between items-center p-2">
-          <span className="text-sm font-semibold capitalize">{language}</span>
-          <span
-            role="button"
-            onClick={handleCopy}
+      <div className="not-prose flex flex-col max-w-full">
+        {tab === 'code' && (
+          <pre
+            {...props}
             className={cn(
-              'cursor-pointer text-sm px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded-md text-zinc-50',
-              copied && 'bg-green-500 hover:bg-green-400'
+              "text-sm w-full dark:bg-zinc-900 p-4 border border-zinc-200",
+              "dark:border-zinc-700 rounded-xl dark:text-zinc-50 text-zinc-900",
+              "overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-600",
+              "scrollbar-track-transparent"
             )}
           >
-            {copied ? 'Copied!' : 'Copy'}
-          </span>
-        </div>
-        <pre {...props} className={`language-${language} p-4 rounded-b-lg overflow-x-auto`}>
-          <code>{codeContent}</code>
-        </pre>
+            <code className="min-w-full inline-block">{children}</code>
+          </pre>
+        )}
+        {tab === 'run' && output && (
+          <div className="text-sm w-full overflow-x-auto bg-zinc-800 dark:bg-zinc-900 p-4 border border-zinc-200 dark:border-zinc-700 border-t-0 rounded-b-xl text-zinc-50">
+            <code className="min-w-full inline-block">{output}</code>
+          </div>
+        )}
       </div>
     );
-  } else {
-    return (
-      <code
-        className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
-        {...props}
-      >
-        {children}
-      </code>
-    );
   }
+
+  return (
+    <code
+      className={cn(
+        className,
+        "text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md"
+      )}
+      {...props}
+    >
+      {children}
+    </code>
+  );
 }
