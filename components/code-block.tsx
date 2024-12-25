@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Prism from 'prismjs';
-import 'prismjs/themes/prism-tomorrow.css'; // Import a Prism.js theme
+import 'prismjs/themes/prism-okaidia.css'; // Example: okaidia theme
+import './prism-custom.css'; // Custom theme tweaks
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
 interface CodeBlockProps {
@@ -48,14 +48,16 @@ export function CodeBlock({
           <span className="text-sm font-semibold capitalize">{language}</span>
           <Tooltip>
             <TooltipTrigger>
-              <Button
-                variant="ghost"
-                size="sm"
+              <span
+                role="button"
                 onClick={handleCopy}
-                className="flex items-center gap-1"
+                className={cn(
+                  'cursor-pointer text-sm px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded-md text-zinc-50',
+                  copied && 'bg-green-500 hover:bg-green-400'
+                )}
               >
                 {copied ? 'Copied!' : 'Copy'}
-              </Button>
+              </span>
             </TooltipTrigger>
             <TooltipContent>Copy code to clipboard</TooltipContent>
           </Tooltip>
