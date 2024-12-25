@@ -6,7 +6,6 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 ] {
   const containerRef = useRef<T>(null);
   const endRef = useRef<T>(null);
-  const lastContentLength = useRef<number>(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -15,9 +14,11 @@ export function useScrollToBottom<T extends HTMLElement>(): [
     if (container && end) {
       const observer = new MutationObserver((mutations) => {
         // Check if mutation is from copy button
-        const isCopyButtonMutation = mutations.some(mutation => 
-          mutation.target.closest('[role="button"]')?.textContent?.includes('Copy')
-        );
+        const isCopyButtonMutation = mutations.some(mutation => {
+          const element = mutation.target as HTMLElement;
+          return element.getAttribute?.('role') === 'button' && 
+                 element.textContent?.includes('Copy');
+        });
 
         if (isCopyButtonMutation) return;
 
