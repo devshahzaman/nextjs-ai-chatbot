@@ -18,7 +18,6 @@ import {
 import {
   generateUUID,
   getMostRecentUserMessage,
-  sanitizeResponseMessages,
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
@@ -79,12 +78,31 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: coreMessages,
         maxSteps: 5,
-        experimental_activeTools: [], //remove the active tools
-        tools: {}, //remove tools
-          experimental_telemetry: {
-              isEnabled: true,
-              functionId: 'stream-text',
-          },
+        experimental_activeTools: [],
+        tools: {},
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: 'stream-text',
+        },
+        onFinal: async (completion) => {
+          if (session.user?.id) {
+            try {
+              await saveMessages({
+                messages: [
+                  {
+                    id: generateUUID(),
+                    chatId: id,
+                    role: 'assistant',
+                    content: completion,
+                    createdAt: new Date(),
+                  },
+                ],
+              });
+            } catch (error) {
+              console.error('Failed to save AI response', error);
+            }
+          }
+        },
       });
 
       result.mergeIntoDataStream(dataStream);
