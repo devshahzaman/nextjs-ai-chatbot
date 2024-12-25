@@ -1,0 +1,64 @@
+/* Base styling for Prism theme */
+code[class*="language-"],
+pre[class*="language-"] {
+  background: #2e3440; /* Unique smooth dark background */
+  color: #d8dee9; /* Light text color */
+  font-family: "Fira Code", monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Syntax highlighting */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #636f88;
+  font-style: italic;
+}
+.token.punctuation {
+  color: #81a1c1;
+}
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: #88c0d0;
+}
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char {
+  color: #a3be8c;
+}
+.token.operator,
+.token.entity {
+  color: #d08770;
+}
+.token.keyword {
+  color: #81a1c1;
+}
+.token.function,
+.token.class-name {
+  color: #8fbcbb;
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #d08770;
+}
+
+/* Misc */
+.token.deleted {
+  color: #bf616a;
+}
+.token.inserted {
+  color: #a3be8c;
+}
