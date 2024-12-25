@@ -61,7 +61,7 @@ export function CodeBlock({
             <TooltipContent>Copy code to clipboard</TooltipContent>
           </Tooltip>
         </div>
-        <pre {...props} className={language-${language} p-4 rounded-b-lg overflow-x-auto}>
+        <pre {...props} className={`language-${language} p-4 rounded-b-lg overflow-x-auto`}>
           <code>{codeContent}</code>
         </pre>
       </div>
@@ -69,7 +69,7 @@ export function CodeBlock({
   } else {
     return (
       <code
-        className={${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md}
+        className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
         {...props}
       >
         {children}
