@@ -4,37 +4,6 @@ import {
   createDataStreamResponse,
   streamText,
 } from 'ai';
-
-import { auth } from '@/app/(auth)/auth';
-import { customModel } from '@/lib/ai';
-import { models } from '@/lib/ai/models';
-import { systemPrompt } from '@/lib/ai/prompts';
-import {
-  deleteChatById,
-  getChatById,
-  saveChat,
-  saveMessages,
-} from '@/lib/db/queries';
-import {
-  generateUUID,
-  getMostRecentUserMessage,
-  sanitizeResponseMessages,
-} from '@/lib/utils';
-
-import { generateTitleFromUserMessage } from '../../actions';
-
-export const maxDuration = 60;
-
-export async function POST(request: Request) {
-  try {
-    const {
-      id,
-      messages,import {
-  type Message,
-  convertToCoreMessages,
-  createDataStreamResponse,
-  streamText,
-} from 'ai';
 import { auth } from '@/app/(auth)/auth';
 import { customModel } from '@/lib/ai';
 import { models } from '@/lib/ai/models';
