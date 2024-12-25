@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { CodeIcon, LoaderIcon, PlayIcon, PythonIcon, CopyIcon } from './icons';
+import { CopyIcon } from './icons';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -48,7 +48,6 @@ export function CodeBlock({
         }
     }, []);
 
-
     useEffect(() => {
         if (codeRef.current) {
             Prism.highlightElement(codeRef.current);
@@ -56,30 +55,30 @@ export function CodeBlock({
     }, [codeRef, children]);
 
 
-
   if (!inline) {
     return (
       <div className="not-prose flex flex-col relative">
           <div className="absolute top-2 right-2 flex gap-2 z-10">
-            <Tooltip>
-                <TooltipTrigger asChild>
+              <Tooltip>
+                  <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={handleCopyCode}
+                        tabIndex={-1}
                     >
-                     <CopyIcon
-                         className={cn("h-4 w-4", {
-                            "text-green-500": isCopied
-                        })}
-                     />
-                     </Button>
-                </TooltipTrigger>
+                        <CopyIcon
+                             className={cn("h-4 w-4", {
+                                "text-green-500": isCopied
+                         })}
+                         />
+                    </Button>
+                 </TooltipTrigger>
                   <TooltipContent>
                       {isCopied ? "Copied!" : "Copy"}
                   </TooltipContent>
-            </Tooltip>
-        </div>
+               </Tooltip>
+          </div>
         <div className="absolute top-2 left-2  z-10 text-sm font-medium text-zinc-400 uppercase">
                 {language}
             </div>
