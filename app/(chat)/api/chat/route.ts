@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   });
 
   return createDataStreamResponse({
-    execute: async (dataStream) => {
+    execute: (dataStream) => {
       dataStream.writeData({
         type: 'user-message-id',
         content: userMessageId,
@@ -79,44 +79,50 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: coreMessages,
         maxSteps: 5,
-        experimental_activeTools: [],
-        tools: {},
+        experimental_activeTools: [], // Remove the active tools
+        tools: {}, // Remove tools
+        onFinish: async ({ response }) => {
+          if (session.user?.id) {
+            try {
+              const responseMessagesWithoutIncompleteToolCalls =
+                sanitizeResponseMessages(response.messages);
+
+              await saveMessages({
+                messages: responseMessagesWithoutIncompleteToolCalls.map(
+                  (message) => {
+                    const messageId = generateUUID();
+
+                    if (message.role === 'assistant') {
+                      dataStream.writeMessageAnnotation({
+                        messageIdFromServer: messageId,
+                      });
+                    }
+
+                    return {
+                      id: messageId,
+                      chatId: id,
+                      role: message.role,
+                      content: message.content,
+                      createdAt: new Date(),
+                    };
+                  },
+                ),
+              });
+            } catch (error) {
+              console.error('Failed to save chat');
+            }
+          }
+        },
         experimental_telemetry: {
           isEnabled: true,
           functionId: 'stream-text',
         },
       });
 
-      let assistantMessages = [];
-
-      for await (const delta of result.fullStream) {
-        if (delta.type === 'text-delta') {
-          assistantMessages.push(delta.textDelta);
-          dataStream.writeData({ type: 'text-delta', content: delta.textDelta });
-        }
-      }
-
-      const fullAssistantMessage = assistantMessages.join('');
-      dataStream.writeData({ type: 'finish', content: '' });
-
-      // Save the assistant's response
-      if (session.user?.id) {
-        await saveMessages({
-          messages: [
-            {
-              id: generateUUID(),
-              chatId: id,
-              role: 'assistant',
-              content: fullAssistantMessage,
-              createdAt: new Date(),
-            },
-          ],
-        });
-      }
+      result.mergeIntoDataStream(dataStream);
     },
   });
 }
-
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
