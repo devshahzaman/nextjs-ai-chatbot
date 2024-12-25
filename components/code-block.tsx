@@ -45,21 +45,23 @@ export function CodeBlock({
       <div className="not-prose relative bg-zinc-900 text-zinc-50 border border-zinc-700 rounded-lg shadow-lg">
         <div className="flex justify-between items-center p-2">
           <span className="text-sm font-semibold capitalize">{language}</span>
-          <Tooltip>
-            <TooltipTrigger>
-              <span
-                role="button"
-                onClick={handleCopy}
-                className={cn(
-                  'cursor-pointer text-sm px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded-md text-zinc-50',
-                  copied && 'bg-green-500 hover:bg-green-400'
-                )}
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>Copy code to clipboard</TooltipContent>
-          </Tooltip>
+          <div className="relative">
+            <Tooltip>
+              <TooltipTrigger>
+                <span
+                  role="button"
+                  onClick={handleCopy}
+                  className={cn(
+                    'cursor-pointer text-sm px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded-md text-zinc-50',
+                    copied && 'bg-green-500 hover:bg-green-400'
+                  )}
+                >
+                  {copied ? 'Copied!' : 'Copy'}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="absolute bottom-full mb-2 left-0 z-10">Copy code to clipboard</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
         <pre {...props} className={`language-${language} p-4 rounded-b-lg overflow-x-auto`}>
           <code>{codeContent}</code>
