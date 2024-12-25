@@ -14,22 +14,15 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 
     if (container && end) {
       const observer = new MutationObserver((mutations) => {
-        const hasNewContent = mutations.some(mutation => {
-          // Check for text content changes
-          if (mutation.type === 'characterData') {
-            return true;
-          }
-          // Check for added nodes that contain text
-          if (mutation.type === 'childList') {
-            return Array.from(mutation.addedNodes).some(node => 
-              node.textContent && node.textContent.length > lastContentLength.current
-            );
-          }
-          return false;
-        });
+        // Check if mutation is from copy button
+        const isCopyButtonMutation = mutations.some(mutation => 
+          mutation.target.closest('[role="button"]')?.textContent?.includes('Copy')
+        );
 
-        if (hasNewContent) {
-          lastContentLength.current = container.textContent?.length || 0;
+        if (isCopyButtonMutation) return;
+
+        // Check if new content is added before scrolling
+        if (container.scrollHeight > container.scrollTop + container.clientHeight) {
           end.scrollIntoView({ behavior: "smooth", block: "end" });
         }
       });
@@ -37,7 +30,6 @@ export function useScrollToBottom<T extends HTMLElement>(): [
       observer.observe(container, {
         childList: true,
         subtree: true,
-        characterData: true
       });
 
       return () => observer.disconnect();
