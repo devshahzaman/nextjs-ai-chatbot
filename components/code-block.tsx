@@ -7,13 +7,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-okaidia.css';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-markup';
-
+// Import all languages
+import 'prismjs/components/';
 
 
 interface CodeBlockProps {
