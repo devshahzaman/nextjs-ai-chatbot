@@ -79,15 +79,41 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: coreMessages,
         maxSteps: 5,
-        experimental_activeTools: [], //remove the active tools
-        tools: {}, //remove tools
-          experimental_telemetry: {
-              isEnabled: true,
-              functionId: 'stream-text',
-          },
+        experimental_activeTools: [],
+        tools: {},
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: 'stream-text',
+        },
       });
 
       result.mergeIntoDataStream(dataStream);
+
+      result.onFinish(async ({ response }) => {
+        if (session.user?.id) {
+          try {
+            const responseMessagesWithoutIncompleteToolCalls =
+              sanitizeResponseMessages(response.messages);
+
+            await saveMessages({
+              messages: responseMessagesWithoutIncompleteToolCalls.map(
+                (message) => {
+                  const messageId = generateUUID();
+                  return {
+                    id: messageId,
+                    chatId: id,
+                    role: message.role,
+                    content: message.content,
+                    createdAt: new Date(),
+                  };
+                },
+              ),
+            });
+          } catch (error) {
+            console.error('Failed to save chat messages:', error);
+          }
+        }
+      });
     },
   });
 }
