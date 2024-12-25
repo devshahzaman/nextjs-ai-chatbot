@@ -26,102 +26,111 @@ import { generateTitleFromUserMessage } from '../../actions';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const {
-    id,
-    messages,
-    modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
-    await request.json();
+  try {
+    const {
+      id,
+      messages,
+      modelId,
+    }: { id: string; messages: Array<Message>; modelId: string } =
+      await request.json();
 
-  const session = await auth();
+    const session = await auth();
+    console.log('Session:', session);
 
-  if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+    if (!session || !session.user || !session.user.id) {
+      console.error('Unauthorized access attempt');
+      return new Response('Unauthorized', { status: 401 });
+    }
 
-  const model = models.find((model) => model.id === modelId);
+    const model = models.find((model) => model.id === modelId);
+    console.log('Model:', model);
 
-  if (!model) {
-    return new Response('Model not found', { status: 404 });
-  }
+    if (!model) {
+      return new Response('Model not found', { status: 404 });
+    }
 
-  const coreMessages = convertToCoreMessages(messages);
-  const userMessage = getMostRecentUserMessage(coreMessages);
+    const coreMessages = convertToCoreMessages(messages);
+    const userMessage = getMostRecentUserMessage(coreMessages);
+    console.log('User Message:', userMessage);
 
-  if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
-  }
+    if (!userMessage) {
+      return new Response('No user message found', { status: 400 });
+    }
 
-  const chat = await getChatById({ id });
+    const chat = await getChatById({ id });
+    console.log('Chat:', chat);
 
-  if (!chat) {
-    const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
-  }
+    if (!chat) {
+      const title = await generateTitleFromUserMessage({ message: userMessage });
+      await saveChat({ id, userId: session.user.id, title });
+    }
 
-  const userMessageId = generateUUID();
+    const userMessageId = generateUUID();
+    await saveMessages({
+      messages: [
+        { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
+      ],
+    });
 
-  await saveMessages({
-    messages: [
-      { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
-    ],
-  });
+    return createDataStreamResponse({
+      execute: (dataStream) => {
+        dataStream.writeData({
+          type: 'user-message-id',
+          content: userMessageId,
+        });
 
-  return createDataStreamResponse({
-    execute: (dataStream) => {
-      dataStream.writeData({
-        type: 'user-message-id',
-        content: userMessageId,
-      });
+        const result = streamText({
+          model: customModel(model.apiIdentifier),
+          system: systemPrompt,
+          messages: coreMessages,
+          maxSteps: 5,
+          experimental_activeTools: [], // Remove the active tools
+          tools: {}, // Remove tools
+          onFinish: async ({ response }) => {
+            if (session.user?.id) {
+              try {
+                const responseMessagesWithoutIncompleteToolCalls =
+                  sanitizeResponseMessages(response.messages);
 
-      const result = streamText({
-        model: customModel(model.apiIdentifier),
-        system: systemPrompt,
-        messages: coreMessages,
-        maxSteps: 5,
-        experimental_activeTools: [], // Remove the active tools
-        tools: {}, // Remove tools
-        onFinish: async ({ response }) => {
-          if (session.user?.id) {
-            try {
-              const responseMessagesWithoutIncompleteToolCalls =
-                sanitizeResponseMessages(response.messages);
+                await saveMessages({
+                  messages: responseMessagesWithoutIncompleteToolCalls.map(
+                    (message) => {
+                      const messageId = generateUUID();
 
-              await saveMessages({
-                messages: responseMessagesWithoutIncompleteToolCalls.map(
-                  (message) => {
-                    const messageId = generateUUID();
+                      if (message.role === 'assistant') {
+                        dataStream.writeMessageAnnotation({
+                          messageIdFromServer: messageId,
+                        });
+                      }
 
-                    if (message.role === 'assistant') {
-                      dataStream.writeMessageAnnotation({
-                        messageIdFromServer: messageId,
-                      });
-                    }
-
-                    return {
-                      id: messageId,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  },
-                ),
-              });
-            } catch (error) {
-              console.error('Failed to save chat');
+                      return {
+                        id: messageId,
+                        chatId: id,
+                        role: message.role,
+                        content: message.content,
+                        createdAt: new Date(),
+                      };
+                    },
+                  ),
+                });
+              } catch (error) {
+                console.error('Failed to save chat messages:', error);
+              }
             }
-          }
-        },
-        experimental_telemetry: {
-          isEnabled: true,
-          functionId: 'stream-text',
-        },
-      });
+          },
+          experimental_telemetry: {
+            isEnabled: true,
+            functionId: 'stream-text',
+          },
+        });
 
-      result.mergeIntoDataStream(dataStream);
-    },
-  });
+        result.mergeIntoDataStream(dataStream);
+      },
+    });
+  } catch (error) {
+    console.error('Error in POST request:', error);
+    return new Response('Internal Server Error', { status: 500 });
+  }
 }
 
 export async function DELETE(request: Request) {
