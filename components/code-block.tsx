@@ -68,9 +68,11 @@ export function CodeBlock({
                         size="icon"
                         onClick={handleCopyCode}
                     >
-                        <CopyIcon className={cn("h-4 w-4", {
+                     <CopyIcon
+                         className={cn("h-4 w-4", {
                             "text-green-500": isCopied
-                        })} />
+                        })}
+                     />
                      </Button>
                 </TooltipTrigger>
                   <TooltipContent>
