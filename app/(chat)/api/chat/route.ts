@@ -24,13 +24,14 @@ import { generateTitleFromUserMessage } from '../../actions';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  console.log("Making API call to AI with data:", { id, messages, modelId });
   const {
     id,
     messages,
     modelId,
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
+  
+  console.log("Making API call to AI with data:", { id, messages, modelId });
 
   const session = await auth();
 
