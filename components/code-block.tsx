@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-okaidia.css'; // Example: okaidia theme
-import './prism-custom.css'; // Custom theme tweaks
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 
