@@ -2,7 +2,7 @@
 
 import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
@@ -14,6 +14,9 @@ import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import { VisibilityType } from './visibility-selector';
 import { useBlockSelector } from '@/hooks/use-block';
+import { getMessagesByChatId } from '@/lib/db/queries';
+import { convertToUIMessages } from '@/lib/utils';
+
 
 export function Chat({
   id,
@@ -29,34 +32,45 @@ export function Chat({
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
+    const [clientMessages, setClientMessages] = useState<Array<Message>>(initialMessages);
 
-  const {
-    messages,
-    setMessages,
-    handleSubmit,
-    input,
-    setInput,
-    append,
-    isLoading,
-    stop,
-    reload,
-  } = useChat({
-    id,
-    body: { id, modelId: selectedModelId },
-    initialMessages,
-    experimental_throttle: 100,
-    onFinish: () => {
-      mutate('/api/history');
-    },
-  });
 
-  const { data: votes } = useSWR<Array<Vote>>(
-    `/api/vote?chatId=${id}`,
-    fetcher,
-  );
+    const {
+      messages,
+      setMessages,
+      handleSubmit,
+      input,
+      setInput,
+      append,
+      isLoading,
+      stop,
+      reload,
+    } = useChat({
+      id,
+      body: { id, modelId: selectedModelId },
+        initialMessages: clientMessages,
+      experimental_throttle: 100,
+      onFinish: () => {
+          mutate('/api/history');
+        },
+    });
 
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isBlockVisible = useBlockSelector((state) => state.isVisible);
+
+    useEffect(() => {
+        const fetchMessages = async () => {
+            const messagesFromDb = await getMessagesByChatId({id});
+            setClientMessages(convertToUIMessages(messagesFromDb))
+        };
+        fetchMessages();
+    }, [id]);
+
+    const { data: votes } = useSWR<Array<Vote>>(
+        `/api/vote?chatId=${id}`,
+        fetcher,
+    );
+
+    const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+    const isBlockVisible = useBlockSelector((state) => state.isVisible);
 
   return (
     <>
