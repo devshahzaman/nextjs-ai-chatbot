@@ -3,7 +3,6 @@ import {
   convertToCoreMessages,
   createDataStreamResponse,
   streamText,
-  StreamingTextResponse, // Import this
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
@@ -19,6 +18,7 @@ import {
 import {
   generateUUID,
   getMostRecentUserMessage,
+  sanitizeResponseMessages,
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
@@ -67,44 +67,29 @@ export async function POST(request: Request) {
     ],
   });
 
-  return new StreamingTextResponse( // Use StreamingTextResponse directly
-    streamText({
-      model: customModel(model.apiIdentifier),
-      system: systemPrompt,
-      messages: coreMessages,
-      maxSteps: 5,
-      experimental_activeTools: [],
-      tools: {},
-      experimental_telemetry: {
-        isEnabled: true,
-        functionId: 'stream-text',
-      },
-    }),
-    {
-      onBeforeStream: async () => {
-        // Optional: Perform actions before the stream starts
-      },
-      onAfterStream: async ({ fullContent }) => {
-        if (session.user?.id) {
-          try {
-            await saveMessages({
-              messages: [
-                {
-                  id: generateUUID(),
-                  chatId: id,
-                  role: 'assistant',
-                  content: fullContent,
-                  createdAt: new Date(),
-                },
-              ],
-            });
-          } catch (error) {
-            console.error('Failed to save AI response', error);
-          }
-        }
-      },
-    }
-  );
+  return createDataStreamResponse({
+    execute: (dataStream) => {
+      dataStream.writeData({
+        type: 'user-message-id',
+        content: userMessageId,
+      });
+
+      const result = streamText({
+        model: customModel(model.apiIdentifier),
+        system: systemPrompt,
+        messages: coreMessages,
+        maxSteps: 5,
+        experimental_activeTools: [], //remove the active tools
+        tools: {}, //remove tools
+          experimental_telemetry: {
+              isEnabled: true,
+              functionId: 'stream-text',
+          },
+      });
+
+      result.mergeIntoDataStream(dataStream);
+    },
+  });
 }
 
 export async function DELETE(request: Request) {
