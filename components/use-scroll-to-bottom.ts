@@ -1,8 +1,8 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef } from "react";
 
 export function useScrollToBottom<T extends HTMLElement>(): [
-  RefObject<T>,
-  RefObject<T>,
+  React.RefObject<T>,
+  React.RefObject<T>
 ] {
   const containerRef = useRef<T>(null);
   const endRef = useRef<T>(null);
@@ -13,14 +13,18 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 
     if (container && end) {
       const observer = new MutationObserver(() => {
-        end.scrollIntoView({ behavior: 'instant', block: 'end' });
+        // Check if new content is added before scrolling
+        if (
+          container.scrollHeight >
+          container.scrollTop + container.clientHeight
+        ) {
+          end.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
       });
 
       observer.observe(container, {
         childList: true,
         subtree: true,
-        attributes: true,
-        characterData: true,
       });
 
       return () => observer.disconnect();
