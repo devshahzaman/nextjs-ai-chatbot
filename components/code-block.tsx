@@ -41,7 +41,7 @@ export function CodeBlock({
 
   if (!inline) {
     return (
-      <div className="not-prose relative bg-zinc-900 text-zinc-50 border border-zinc-700 rounded-lg shadow-lg w-11/12">
+      <div className="not-prose relative bg-zinc-900 text-zinc-50 rounded-lg shadow-lg w-11/12">
         <div className="flex justify-between items-center p-2">
           <span className="text-sm font-semibold capitalize">{language}</span>
           <span
