@@ -41,7 +41,7 @@ export function CodeBlock({
 
   if (!inline) {
     return (
-      <div className="not-prose relative bg-zinc-900 text-zinc-50 border border-zinc-700 rounded-lg shadow-lg w-9/12">
+      <div className="not-prose relative bg-zinc-900 text-zinc-50 border border-zinc-700 rounded-lg shadow-lg w-11/12">
         <div className="flex justify-between items-center p-2">
           <span className="text-sm font-semibold capitalize">{language}</span>
           <span
@@ -55,7 +55,7 @@ export function CodeBlock({
             {copied ? 'Copied!' : 'Copy'}
           </span>
         </div>
-        <pre {...props} className={`language-${language} p-4 rounded-b-lg overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-600`}>
+        <pre {...props} className={`language-${language} p-4 rounded-b-lg overflow-x-auto`}>
           <code>{codeContent}</code>
         </pre>
       </div>
