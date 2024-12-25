@@ -13,14 +13,14 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 
     if (container && end) {
       const observer = new MutationObserver(() => {
-        end.scrollIntoView({ behavior: 'instant', block: 'end' });
+        end.scrollIntoView({ behavior: 'smooth', block: 'end' });
       });
 
       observer.observe(container, {
         childList: true,
         subtree: true,
         attributes: true,
-        characterData: true,
+        // characterData: true,
       });
 
       return () => observer.disconnect();
