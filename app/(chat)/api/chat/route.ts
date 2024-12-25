@@ -54,6 +54,7 @@ export async function POST(request: Request) {
 
   const chat = await getChatById({ id });
 
+  // Save chat if it doesn't already exist
   if (!chat) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
     await saveChat({ id, userId: session.user.id, title });
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
 
   const userMessageId = generateUUID();
 
+  // Save the user message
   await saveMessages({
     messages: [
       { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
@@ -79,34 +81,22 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: coreMessages,
         maxSteps: 5,
-        experimental_activeTools: [], // Define active tools if needed
-        tools: {}, // Define tools if needed
+        tools: {}, // Define tools here if needed
+        experimental_activeTools: [], // Add tools if required
         onFinish: async ({ response }) => {
           if (session.user?.id) {
             try {
-              const responseMessagesWithoutIncompleteToolCalls =
+              const sanitizedMessages =
                 sanitizeResponseMessages(response.messages);
 
               await saveMessages({
-                messages: responseMessagesWithoutIncompleteToolCalls.map(
-                  (message) => {
-                    const messageId = generateUUID();
-
-                    if (message.role === 'assistant') {
-                      dataStream.writeMessageAnnotation({
-                        messageIdFromServer: messageId,
-                      });
-                    }
-
-                    return {
-                      id: messageId,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  },
-                ),
+                messages: sanitizedMessages.map((message) => ({
+                  id: generateUUID(),
+                  chatId: id,
+                  role: message.role,
+                  content: message.content,
+                  createdAt: new Date(),
+                })),
               });
             } catch (error) {
               console.error('Failed to save chat messages:', error);
@@ -149,6 +139,7 @@ export async function DELETE(request: Request) {
 
     return new Response('Chat deleted', { status: 200 });
   } catch (error) {
+    console.error('Error deleting chat:', error);
     return new Response('An error occurred while processing your request', {
       status: 500,
     });
