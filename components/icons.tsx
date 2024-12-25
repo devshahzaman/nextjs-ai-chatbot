@@ -1,3 +1,8 @@
+interface CopyIconProps {
+  size?: number;
+  className?: string;
+}
+
 export const BotIcon = () => {
   return (
     <svg
@@ -763,8 +768,9 @@ export const PlusIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const CopyIcon = ({ size = 16 }: { size?: number }) => (
+export const CopyIcon = ({ size = 16, className }: CopyIconProps) => (
   <svg
+    className={className} // Pass the className prop here
     height={size}
     strokeLinejoin="round"
     viewBox="0 0 16 16"
