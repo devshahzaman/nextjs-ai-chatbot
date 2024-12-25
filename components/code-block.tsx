@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-okaidia.css'; // Example: okaidia theme
