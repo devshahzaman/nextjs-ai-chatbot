@@ -1,3 +1,5 @@
+// components/use-scroll-to-bottom.ts
+
 import { useEffect, useRef } from "react";
 
 export function useScrollToBottom<T extends HTMLElement>(): [
@@ -12,10 +14,10 @@ export function useScrollToBottom<T extends HTMLElement>(): [
     const end = endRef.current;
 
     if (container && end) {
-      const observer = new MutationObserver(mutations => {
+      const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
-          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            end.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+            end.scrollIntoView({ behavior: "smooth", block: "end" });
             break;
           }
         }
@@ -23,12 +25,11 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 
       observer.observe(container, {
         childList: true,
-        subtree: true,
       });
 
       return () => observer.disconnect();
     }
-  }, []);
+  }, []); // The effect runs only once, setting up the observer.
 
   return [containerRef, endRef];
 }
