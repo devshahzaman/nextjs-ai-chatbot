@@ -3,23 +3,23 @@ import {
   convertToCoreMessages,
   createDataStreamResponse,
   streamText,
-} from 'ai';
-import { auth } from '@/app/(auth)/auth';
-import { customModel } from '@/lib/ai';
-import { models } from '@/lib/ai/models';
-import { systemPrompt } from '@/lib/ai/prompts';
+} from "ai";
+import { auth } from "@/app/(auth)/auth";
+import { customModel } from "@/lib/ai";
+import { models } from "@/lib/ai/models";
+import { systemPrompt } from "@/lib/ai/prompts";
 import {
   deleteChatById,
   getChatById,
   saveChat,
   saveMessages,
-} from '@/lib/db/queries';
+} from "@/lib/db/queries";
 import {
   generateUUID,
   getMostRecentUserMessage,
   sanitizeResponseMessages,
-} from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
+} from "@/lib/utils";
+import { generateTitleFromUserMessage } from "../../actions";
 
 export const maxDuration = 60;
 
@@ -34,25 +34,25 @@ export async function POST(request: Request) {
   // Sanitize incoming messages to remove toolInvocations
   const sanitizedMessages = messages.map(({ role, content }) => ({
     role,
-    content
+    content,
   }));
-  
-  console.log("Making API call to AI with data:", { 
-    id, 
-    messages: sanitizedMessages, 
-    modelId 
+
+  console.log("Making API call to AI with data:", {
+    id,
+    messages: sanitizedMessages,
+    modelId,
   });
 
   const session = await auth();
 
   if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response("Unauthorized", { status: 401 });
   }
 
   const model = models.find((model) => model.id === modelId);
 
   if (!model) {
-    return new Response('Model not found', { status: 404 });
+    return new Response("Model not found", { status: 404 });
   }
 
   // Convert sanitized messages
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const userMessage = getMostRecentUserMessage(coreMessages);
 
   if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
+    return new Response("No user message found", { status: 400 });
   }
 
   const chat = await getChatById({ id });
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
   return createDataStreamResponse({
     execute: (dataStream) => {
       dataStream.writeData({
-        type: 'user-message-id',
+        type: "user-message-id",
         content: userMessageId,
       });
 
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
                   (message) => {
                     const messageId = generateUUID();
 
-                    if (message.role === 'assistant') {
+                    if (message.role === "assistant") {
                       dataStream.writeMessageAnnotation({
                         messageIdFromServer: messageId,
                       });
@@ -116,11 +116,11 @@ export async function POST(request: Request) {
                       content: message.content,
                       createdAt: new Date(),
                     };
-                  },
+                  }
                 ),
               });
             } catch (error) {
-              console.error('Failed to save chat messages:', error);
+              console.error("Failed to save chat messages:", error);
             }
           }
         },
@@ -133,30 +133,30 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new Response("Not Found", { status: 404 });
   }
 
   const session = await auth();
 
   if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
     const chat = await getChatById({ id });
 
     if (chat.userId !== session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     await deleteChatById({ id });
 
-    return new Response('Chat deleted', { status: 200 });
+    return new Response("Chat deleted", { status: 200 });
   } catch (error) {
-    return new Response('An error occurred while processing your request', {
+    return new Response("An error occurred while processing your request", {
       status: 500,
     });
   }

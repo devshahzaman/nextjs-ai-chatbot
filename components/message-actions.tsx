@@ -109,7 +109,7 @@ export function PureMessageActions({
           <TooltipContent>Copy</TooltipContent>
         </Tooltip>
 
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <Button
               className={`py-1 px-2 h-fit text-muted-foreground ${
@@ -137,7 +137,7 @@ export function PureMessageActions({
             </Button>
           </TooltipTrigger>
           <TooltipContent>Downvote Response</TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
       </div>
     </TooltipProvider>
   );
