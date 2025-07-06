@@ -1,96 +1,76 @@
-import Link from 'next/link';
-import React, { memo, useMemo, useState } from 'react';
-import ReactMarkdown, { type Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { CodeBlock } from './code-block';
+// components/markdown.tsx
+
+import Link from "next/link";
+import React, { memo } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { CodeBlock } from "./code-block";
 
 const components: Partial<Components> = {
-  // @ts-expect-error
+  // @ts-expect-error - The CodeBlock component handles the 'inline' prop
   code: CodeBlock,
-  pre: ({ children }) => <>{children}</>,
-  ol: ({ node, children, ...props }) => {
-    return (
-      <ol className="list-decimal list-outside ml-4" {...props}>
-        {children}
-      </ol>
-    );
-  },
-  li: ({ node, children, ...props }) => {
-    return (
-      <li className="py-1" {...props}>
-        {children}
-      </li>
-    );
-  },
-  ul: ({ node, children, ...props }) => {
-    return (
-      <ul className="list-decimal list-outside ml-4" {...props}>
-        {children}
-      </ul>
-    );
-  },
-  strong: ({ node, children, ...props }) => {
-    return (
-      <span className="font-semibold" {...props}>
-        {children}
-      </span>
-    );
-  },
-  a: ({ node, children, ...props }) => {
-    return (
-      // @ts-expect-error
-      <Link
-        className="text-blue-500 hover:underline"
-        target="_blank"
-        rel="noreferrer"
-        {...props}
-      >
-        {children}
-      </Link>
-    );
-  },
-  h1: ({ node, children, ...props }) => {
-    return (
-      <h1 className="text-3xl font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h1>
-    );
-  },
-  h2: ({ node, children, ...props }) => {
-    return (
-      <h2 className="text-2xl font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h2>
-    );
-  },
-  h3: ({ node, children, ...props }) => {
-    return (
-      <h3 className="text-xl font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h3>
-    );
-  },
-  h4: ({ node, children, ...props }) => {
-    return (
-      <h4 className="text-lg font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h4>
-    );
-  },
-  h5: ({ node, children, ...props }) => {
-    return (
-      <h5 className="text-base font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h5>
-    );
-  },
-  h6: ({ node, children, ...props }) => {
-    return (
-      <h6 className="text-sm font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h6>
-    );
-  },
+  // Fix: Don't use a fragment. Pass the <pre> tag through so CodeBlock can receive its props.
+  pre: ({ node, children, ...props }) => (
+    <pre {...props} className="relative">
+      {children}
+    </pre>
+  ),
+  ol: ({ node, children, ...props }) => (
+    <ol className="list-decimal list-outside ml-6 my-4 space-y-2" {...props}>
+      {children}
+    </ol>
+  ),
+  li: ({ node, children, ...props }) => (
+    <li className="py-1 pl-2" {...props}>
+      {children}
+    </li>
+  ),
+  ul: ({ node, children, ...props }) => (
+    <ul className="list-disc list-outside ml-6 my-4 space-y-2" {...props}>
+      {children}
+    </ul>
+  ),
+  p: ({ node, children, ...props }) => (
+    <p className="my-4 leading-relaxed" {...props}>
+      {children}
+    </p>
+  ),
+  strong: ({ node, children, ...props }) => (
+    <strong className="font-semibold" {...props}>
+      {children}
+    </strong>
+  ),
+  a: ({ node, children, ...props }) => (
+    <Link
+      href={props.href || "#"}
+      className="text-blue-500 hover:text-blue-600 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    >
+      {children}
+    </Link>
+  ),
+  h1: ({ node, children, ...props }) => (
+    <h1 className="text-3xl font-bold mt-6 mb-4" {...props}>
+      {children}
+    </h1>
+  ),
+  h2: ({ node, children, ...props }) => (
+    <h2 className="text-2xl font-bold mt-6 mb-4 border-b pb-2" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ node, children, ...props }) => (
+    <h3 className="text-xl font-semibold mt-5 mb-3" {...props}>
+      {children}
+    </h3>
+  ),
+  h4: ({ node, children, ...props }) => (
+    <h4 className="text-lg font-semibold mt-5 mb-3" {...props}>
+      {children}
+    </h4>
+  ),
 };
 
 const remarkPlugins = [remarkGfm];
@@ -105,5 +85,5 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
 
 export const Markdown = memo(
   NonMemoizedMarkdown,
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
+  (prevProps, nextProps) => prevProps.children === nextProps.children
 );
