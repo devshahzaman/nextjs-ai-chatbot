@@ -12,19 +12,12 @@ export function useScrollToBottom<T extends HTMLElement>(): [
     const end = endRef.current;
 
     if (container && end) {
-      const observer = new MutationObserver((mutations) => {
-        // Check if mutation is from copy button
-        const isCopyButtonMutation = mutations.some(mutation => {
-          const element = mutation.target as HTMLElement;
-          return element.getAttribute?.('role') === 'button' && 
-                 element.textContent?.includes('Copy');
-        });
-
-        if (isCopyButtonMutation) return;
-
-        // Check if new content is added before scrolling
-        if (container.scrollHeight > container.scrollTop + container.clientHeight) {
-          end.scrollIntoView({ behavior: "smooth", block: "end" });
+      const observer = new MutationObserver(mutations => {
+        for (const mutation of mutations) {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            end.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            break;
+          }
         }
       });
 
