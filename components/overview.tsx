@@ -7,16 +7,14 @@ export const Overview = () => {
   return (
     <motion.div
       key="overview"
-      className="max-w-3xl mx-auto md:mt-20"
+      className="max-w-3xl mx-auto md:mt-20 px-8 size-full flex flex-col justify-center"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ delay: 0.5 }}
     >
-      <div className="max-w-3xl mx-auto md:mt-20 px-8 size-full flex flex-col justify-center">
-        <div className="text-2xl font-semibold">Hello there!</div>
-        <div className="text-2xl text-zinc-500">How can I help you today?</div>
-      </div>
+      <div className="text-2xl font-semibold">Hello there!</div>
+      <div className="text-2xl text-zinc-500">How can I help you today?</div>
     </motion.div>
   );
 };
