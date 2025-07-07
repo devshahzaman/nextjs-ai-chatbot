@@ -70,7 +70,7 @@ const PurePreviewMessage = ({
               "flex flex-col gap-2",
               // AI messages take the full width of the container.
               // User messages are constrained for better readability.
-              message.role === "assistant" ? "w-full" : "max-w-2xl"
+              message.role === "assistant" ? "w-full" : "w-full"
             )}
           >
             {message.experimental_attachments && (
