@@ -50,8 +50,7 @@ const PurePreviewMessage = ({
       <motion.div
         // KEY CHANGE: This container sets the max-width and centers the entire message row.
         // This makes it align perfectly with your input box.
-        // You can adjust `max-w-4xl` to `max-w-3xl` if you want it slightly narrower.
-        className="w-full max-w-4xl mx-auto px-4 group/message"
+        className="w-full max-w-[47rem] mx-auto px-4 group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
@@ -85,7 +84,7 @@ const PurePreviewMessage = ({
             )}
 
             {message.content && mode === "view" && (
-              <div className="flex flex-row gap-2 items-start">
+              <div className="flex flex-row gap-2 items-start justify-end">
                 {message.role === "user" && !isReadonly && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -104,7 +103,7 @@ const PurePreviewMessage = ({
                 )}
 
                 <div
-                  className={cn("flex flex-col gap-2 w-full", {
+                  className={cn("flex flex-col gap-2", {
                     "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
                       message.role === "user",
                   })}
@@ -230,7 +229,7 @@ export const ThinkingMessage = () => {
 
   return (
     <motion.div
-      className="w-full max-w-4xl mx-auto px-4 group/message "
+      className="w-full max-w-[47rem] mx-auto px-4 group/message "
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
