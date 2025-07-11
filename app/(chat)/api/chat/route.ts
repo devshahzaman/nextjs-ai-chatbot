@@ -3,6 +3,7 @@ import {
   convertToCoreMessages,
   createDataStreamResponse,
   streamText,
+  generateImage,
 } from "ai";
 import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
@@ -85,48 +86,80 @@ export async function POST(request: Request) {
         content: userMessageId,
       });
 
-      const result = streamText({
-        model: customModel(model.apiIdentifier),
-        system: systemPrompt,
-        messages: coreMessages,
-        maxSteps: 5,
-        experimental_activeTools: [],
-        tools: {},
-        onFinish: async ({ response }) => {
-          if (session.user?.id) {
-            try {
-              const responseMessagesWithoutIncompleteToolCalls =
-                sanitizeResponseMessages(response.messages);
+      if (model.id === "gemini-2.0-flash-preview-image-generation") {
+        generateImage({
+          model: customModel(model.apiIdentifier),
+          prompt: userMessage.content as string,
+        }).then(async ({ image, finishReason, usage }) => {
+          if (finishReason === "success") {
+            const assistantMessageId = generateUUID();
+            dataStream.appendMessage({
+              id: assistantMessageId,
+              role: "assistant",
+              content: [{ type: "image", image: image as string }],
+            });
 
-              await saveMessages({
-                messages: responseMessagesWithoutIncompleteToolCalls.map(
-                  (message) => {
-                    const messageId = generateUUID();
-
-                    if (message.role === "assistant") {
-                      dataStream.writeMessageAnnotation({
-                        messageIdFromServer: messageId,
-                      });
-                    }
-
-                    return {
-                      id: messageId,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  }
-                ),
-              });
-            } catch (error) {
-              console.error("Failed to save chat messages:", error);
-            }
+            await saveMessages({
+              messages: [
+                {
+                  id: assistantMessageId,
+                  chatId: id,
+                  role: "assistant",
+                  content: image as string, // Assuming image is a string URL
+                  createdAt: new Date(),
+                },
+              ],
+            });
+            dataStream.close();
+          } else {
+            // Handle error case
+            dataStream.close();
           }
-        },
-      });
+        });
+      } else {
+        const result = streamText({
+          model: customModel(model.apiIdentifier),
+          system: systemPrompt,
+          messages: coreMessages,
+          maxSteps: 5,
+          experimental_activeTools: [],
+          tools: {},
+          onFinish: async ({ response }) => {
+            if (session.user?.id) {
+              try {
+                const responseMessagesWithoutIncompleteToolCalls =
+                  sanitizeResponseMessages(response.messages);
 
-      result.mergeIntoDataStream(dataStream);
+                await saveMessages({
+                  messages: responseMessagesWithoutIncompleteToolCalls.map(
+                    (message) => {
+                      const messageId = generateUUID();
+
+                      if (message.role === "assistant") {
+                        dataStream.writeMessageAnnotation({
+                          messageIdFromServer: messageId,
+                        });
+                      }
+
+                      return {
+                        id: messageId,
+                        chatId: id,
+                        role: message.role,
+                        content: message.content,
+                        createdAt: new Date(),
+                      };
+                    }
+                  ),
+                });
+              } catch (error) {
+                console.error("Failed to save chat messages:", error);
+              }
+            }
+          },
+        });
+
+        result.mergeIntoDataStream(dataStream);
+      }
     },
   });
 }

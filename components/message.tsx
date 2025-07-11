@@ -1,5 +1,3 @@
-// components/message.tsx
-
 "use client";
 
 import type { ChatRequestOptions, Message } from "ai";
@@ -21,6 +19,7 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { MessageEditor } from "./message-editor";
 import { DocumentPreview } from "./document-preview";
+import Image from "next/image";
 
 const PurePreviewMessage = ({
   chatId,
@@ -83,35 +82,55 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.content && mode === "view" && (
-              <div className="flex flex-row gap-2 items-start justify-end">
-                {message.role === "user" && !isReadonly && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
-                        onClick={() => {
-                          setMode("edit");
-                        }}
-                      >
-                        <PencilEditIcon />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit message</TooltipContent>
-                  </Tooltip>
-                )}
+            {message.content &&
+              typeof message.content === "string" &&
+              mode === "view" && (
+                <div className="flex flex-row gap-2 items-start">
+                  {message.role === "user" && !isReadonly && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                          onClick={() => {
+                            setMode("edit");
+                          }}
+                        >
+                          <PencilEditIcon />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit message</TooltipContent>
+                    </Tooltip>
+                  )}
 
-                <div
-                  className={cn("flex flex-col gap-2", {
-                    "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
-                      message.role === "user",
-                  })}
-                >
-                  <Markdown>{message.content as string}</Markdown>
+                  <div
+                    className={cn("flex flex-col gap-2", {
+                      "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
+                        message.role === "user",
+                    })}
+                  >
+                    <Markdown>{message.content as string}</Markdown>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+            {message.content &&
+              Array.isArray(message.content) &&
+              message.content.map((content, index) => {
+                if (content.type === "image") {
+                  return (
+                    <div key={index} className="relative w-full h-96">
+                      <Image
+                        src={content.image as string}
+                        alt="Generated Image"
+                        layout="fill"
+                        objectFit="contain"
+                      />
+                    </div>
+                  );
+                }
+                return null;
+              })}
 
             {message.content && mode === "edit" && (
               <div className="flex flex-row gap-2 items-start w-full">
