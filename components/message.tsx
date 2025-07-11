@@ -5,6 +5,7 @@
 import type { ChatRequestOptions, Message } from "ai";
 import cx from "classnames";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { memo, useState } from "react";
 
 import type { Vote } from "@/lib/db/schema";
@@ -21,6 +22,16 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { MessageEditor } from "./message-editor";
 import { DocumentPreview } from "./document-preview";
+
+const isUrl = (text: string) => {
+  try {
+    new URL(text);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 
 const PurePreviewMessage = ({
   chatId,
@@ -108,7 +119,17 @@ const PurePreviewMessage = ({
                       message.role === "user",
                   })}
                 >
-                  <Markdown>{message.content as string}</Markdown>
+                  {isUrl(message.content) ? (
+                    <Image
+                      src={message.content}
+                      alt="Generated Image"
+                      width={512}
+                      height={512}
+                      className="rounded-xl"
+                    />
+                  ) : (
+                    <Markdown>{message.content as string}</Markdown>
+                  )}
                 </div>
               </div>
             )}

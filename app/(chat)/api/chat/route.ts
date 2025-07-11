@@ -1,9 +1,11 @@
 import {
-  type Message,
   convertToCoreMessages,
   createDataStreamResponse,
   streamText,
+  tool,
+  type Message,
 } from "ai";
+import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
 import { models } from "@/lib/ai/models";
@@ -85,13 +87,68 @@ export async function POST(request: Request) {
         content: userMessageId,
       });
 
+      if (model.id === "gemini-2.0-flash-preview-image-generation") {
+        const result = streamText({
+          model: customModel(model.apiIdentifier),
+          system: systemPrompt,
+          messages: coreMessages,
+          tools: {
+            image: tool({
+              description: "Generate an image from a prompt.",
+              parameters: z.object({
+                prompt: z.string(),
+              }),
+              execute: async ({ prompt }) => {
+                // For now, we'll just return a placeholder.
+                // In a real application, you'd generate an image here.
+                return {
+                  result: `Image generation for "${prompt}" is not implemented yet.`,
+                };
+              },
+            }),
+          },
+          onFinish: async ({ response }) => {
+            if (session.user?.id) {
+              try {
+                const responseMessagesWithoutIncompleteToolCalls =
+                  sanitizeResponseMessages(response.messages);
+
+                await saveMessages({
+                  messages: responseMessagesWithoutIncompleteToolCalls.map(
+                    (message) => {
+                      const messageId = generateUUID();
+
+                      if (message.role === "assistant") {
+                        dataStream.writeMessageAnnotation({
+                          messageIdFromServer: messageId,
+                        });
+                      }
+
+                      return {
+                        id: messageId,
+                        chatId: id,
+                        role: message.role,
+                        content: message.content,
+                        createdAt: new Date(),
+                      };
+                    }
+                  ),
+                });
+              } catch (error) {
+                console.error("Failed to save chat messages:", error);
+              }
+            }
+          },
+        });
+
+        result.mergeIntoDataStream(dataStream);
+        return;
+      }
+
       const result = streamText({
         model: customModel(model.apiIdentifier),
         system: systemPrompt,
         messages: coreMessages,
-        maxSteps: 5,
-        experimental_activeTools: [],
-        tools: {},
         onFinish: async ({ response }) => {
           if (session.user?.id) {
             try {
