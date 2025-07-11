@@ -184,7 +184,3 @@ pre[class*=language-] {
 pre[class*=language-] {
     margin: 0 !important;
 }
-
-div[data-role="user"] div.flex.flex-row.gap-2.items-start {
-    justify-content: flex-end;
-}
