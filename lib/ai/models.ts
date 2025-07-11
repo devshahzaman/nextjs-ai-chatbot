@@ -9,23 +9,17 @@ export interface Model {
 
 export const models: Array<Model> = [
   {
-    id: "gemini-2.0-flash-exp",
+    id: "gemini-2.5-flash",
     label: "Chat Model",
-    apiIdentifier: "gemini-2.0-flash-exp",
+    apiIdentifier: "gemini-2.5-flash",
     description: "For Advanced Reasoning Tasks",
   },
   {
-    id: "gemini-1.5-flash",
-    label: "Gemini 1.5 Flash",
-    apiIdentifier: "gemini-1.5-flash",
-    description: "Great for Small Tasks.",
-  },
-  {
-    id: "gemini-1.5-pro",
-    label: "Gemini 1.5 Pro",
-    apiIdentifier: "gemini-1.5-pro",
-    description: "Great for Everyday Tasks.",
+    id: "gemini-2.0-flash-preview-image-generation",
+    label: "Image Generation Model",
+    apiIdentifier: "gemini-2.0-flash-preview-image-generation",
+    description: "Generates Images from text prompts.",
   },
 ] as const;
 
-export const DEFAULT_MODEL_NAME: string = "gemini-2.0-flash-exp";
+export const DEFAULT_MODEL_NAME: string = "gemini-2.5-flash";
