@@ -83,7 +83,7 @@ export function CodeBlock({
         </div>
         <pre
           {...props}
-          className={`language-${language} p-4 !my-0 rounded-b-lg overflow-x-auto`}
+          className={`language-${language} p-4 !my-0 rounded-b-lg overflow-x-auto max-w-[45rem]`}
         >
           <code ref={codeRef}>{codeContent}</code>
         </pre>
